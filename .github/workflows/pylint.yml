@@ -23,26 +23,11 @@ jobs:
         pylint pi_server/ | tee pylint.txt
         score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
         anybadge -l pylint -v $score -f pylint.svg 2=red 4=orange 9=yellow 10=green
-    - uses: stefanzweifel/git-auto-commit-action@v4
     - name: Archive code coverage results
+      uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        # Optional. Commit message for the created commit.
-        # Defaults to "Apply automatic changes"
-        commit_message: Automated Change
-
-        # Optional. Local and remote branch name where commit is going to be pushed
-        #  to. Defaults to the current branch.
-        #  You might need to set `create_branch: true` if the branch does not exist.
+        commit_message: update pylint badge
         branch: badges
-
-        # Optional. Options used by `git-commit`.
-        # See https://git-scm.com/docs/git-commit#_options
         commit_options: '--no-verify --signoff'
-
-        # Optional glob pattern of files which should be added to the commit
-        # Defaults to all (.)
-        # See the `pathspec`-documentation for git
-        # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
-        # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
         file_pattern: '*.svg '
 
