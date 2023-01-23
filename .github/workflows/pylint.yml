@@ -30,4 +30,5 @@ jobs:
         branch: badges
         commit_options: '--no-verify --signoff'
         file_pattern: '*.svg '
+        create_branch: true
 
