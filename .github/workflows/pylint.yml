@@ -10,6 +10,8 @@ jobs:
         python-version: ["3.10"]
     steps:
     - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.ACCESS_TOKEN }}
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
@@ -31,5 +33,4 @@ jobs:
         commit_options: '--no-verify --signoff'
         file_pattern: '*.svg '
         create_branch: true
-        token: ${{ secrets.ACCESS_TOKEN }}
 
