@@ -2,7 +2,12 @@ name: Build APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'        # matches every branch
+      - '!badges'   # excludes master
+    paths:
+      - android_app/**
+      - .github/workflows/android.yml
 
 jobs:
   apk:
@@ -26,4 +31,4 @@ jobs:
         # Artifact name
         name: latest-apk
         # A file, directory or wildcard pattern that describes what to upload
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: android_app/app/build/outputs/apk/debug/app-debug.apk
