@@ -1,4 +1,4 @@
-![pylint badge](https://github.com/marv1913/Android-RasPi-WifiP2P/blob/badges/pylint.svg)
+![pylint badge](https://github.com/marv1913/Android-RasPi-WifiP2P/blob/badges/pylint.svg) [![Build APK](https://github.com/marv1913/Android-RasPi-WifiP2P/actions/workflows/android.yml/badge.svg)](https://github.com/marv1913/Android-RasPi-WifiP2P/actions/workflows/android.yml)
 
 # Android-RasPi-WifiP2P-Communication
 This project provides two applications for setting up a Wifi Direct connection between a Raspberry Pi 3b and an android 
