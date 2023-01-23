@@ -31,4 +31,5 @@ jobs:
         commit_options: '--no-verify --signoff'
         file_pattern: '*.svg '
         create_branch: true
+        token: ${{ secrets.ACCESS_TOKEN }}
 
