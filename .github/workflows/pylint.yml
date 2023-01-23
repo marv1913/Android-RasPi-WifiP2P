@@ -3,40 +3,46 @@ name: Pylint
 on: [push]
 
 jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         python-version: ["3.10"]
-#     steps:
-#     - uses: actions/checkout@v3
-#     - name: Set up Python ${{ matrix.python-version }}
-#       uses: actions/setup-python@v3
-#       with:
-#         python-version: ${{ matrix.python-version }}
-#     - name: Install dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         pip install pylint anybadge
-#     - name: Analysing the code with pylint
-#       run: |
-#         pylint pi_server/ | tee pylint.txt
-#         score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
-#         anybadge -l pylint -v $score -f pylint.svg 2=red 4=orange 9=yellow 10=green
-#     - name: Archive code coverage results
-#       uses: actions/upload-artifact@v3
-#       with:
-#           path: "*.svg"
-  badge_job:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
     steps:
-      - id: date
-        run: echo "##[set-output name=data;]$(date)"
-      - name: Time badge
-        uses: RubbaBoy/BYOB@v1.3.0
-        with:
-          NAME: time
-          LABEL: 'Updated at'
-          STATUS: ${{ steps.date.outputs.data }}
-          COLOR: 00EEFF
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint anybadge
+    - name: Analysing the code with pylint
+      run: |
+        pylint pi_server/ | tee pylint.txt
+        score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
+        anybadge -l pylint -v $score -f pylint.svg 2=red 4=orange 9=yellow 10=green
+    - name: Archive code coverage results
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        # Optional. Commit message for the created commit.
+        # Defaults to "Apply automatic changes"
+        commit_message: Automated Change
+
+        # Optional. Local and remote branch name where commit is going to be pushed
+        #  to. Defaults to the current branch.
+        #  You might need to set `create_branch: true` if the branch does not exist.
+        branch: badges
+
+        # Optional. Options used by `git-commit`.
+        # See https://git-scm.com/docs/git-commit#_options
+        commit_options: '--no-verify --signoff'
+
+        # Optional glob pattern of files which should be added to the commit
+        # Defaults to all (.)
+        # See the `pathspec`-documentation for git
+        # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
+        # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+        file_pattern: '*.svg '
+
