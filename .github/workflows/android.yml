@@ -15,12 +15,11 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: gradle
-    - name: change directory
-      run: cd android_app
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew assembleDebug --stacktrace
+      run: | 
+          cd android_app
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.1.2
       with:
