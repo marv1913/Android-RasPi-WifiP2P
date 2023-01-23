@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 import time
@@ -19,6 +20,9 @@ P2P_GROUP_REMOVE_COMMAND = f"{WPA_CLI_LOCATION} -ip2p-dev-wlan0 p2p_group_remove
 
 
 class WifiDirectConnector:
+    """
+    This class provides methods for establishing a WiFi-Direct connection with an Android device.
+    """
     WPA_CLI_HELP = f"{WPA_CLI_LOCATION} -h"
 
     def __init__(self):
@@ -31,11 +35,11 @@ class WifiDirectConnector:
         check whether the application 'wpa_cli`is installed
         :raises ValueError: raise if not installed or status-code is not equal to 0
         """
-        child = subprocess.Popen(self.WPA_CLI_HELP.split(' '), stdout=subprocess.DEVNULL,
-                                 stderr=subprocess.STDOUT)
-        child.wait()
-        if child.returncode != 0:
-            raise ValueError('wpa_cli is not available')
+        with subprocess.Popen(self.WPA_CLI_HELP.split(' '), stdout=subprocess.DEVNULL,
+                              stderr=subprocess.STDOUT) as child:
+            child.wait()
+            if child.returncode != 0:
+                raise ValueError('wpa_cli is not available')
 
     def disconnect(self):
         """
@@ -174,16 +178,22 @@ class WifiDirectConnector:
         connected = False
         while not connected:
             try:
-                mac_addr = wifi_direct_conn.get_mac_address()
+                mac_addr = self.get_mac_address()
                 print(f'mac address: {mac_addr}')
-                connected = wifi_direct_conn.p2p_connect(mac_addr)
+                connected = self.p2p_connect(mac_addr)
             except ValueError:
                 time.sleep(1)
 
 
 if __name__ == "__main__":
     wifi_direct_conn = WifiDirectConnector()
-    wifi_direct_conn.set_device_name('Android_dq8l')
+
+    parser = argparse.ArgumentParser(description='Provides an Interface to set up a P2P Server.')
+
+    parser.add_argument('target_device', help="Set name of target device")
+    args = parser.parse_args()
+
+    wifi_direct_conn.set_device_name(args.target_device)
     wifi_direct_conn.p2p_group_remove()
     wifi_direct_conn.central_connected()
 
