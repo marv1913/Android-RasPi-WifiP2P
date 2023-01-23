@@ -2,7 +2,6 @@ import os
 import subprocess
 import time
 
-
 BLE_INIT_FAILED = ord("0")
 BLE_INIT_SUCCESS = ord("1")
 CENTRAL_CONNECTED = ord("2")
@@ -28,36 +27,15 @@ class WifiDirectConnector:
         self.check_wpa_cli_available()
 
     def check_wpa_cli_available(self):
+        """
+        check whether the application 'wpa_cli`is installed
+        :raises ValueError: raise if not installed or status-code is not equal to 0
+        """
         child = subprocess.Popen(self.WPA_CLI_HELP.split(' '), stdout=subprocess.DEVNULL,
                                  stderr=subprocess.STDOUT)
         child.wait()
         if child.returncode != 0:
             raise ValueError('wpa_cli is not available')
-
-    def main(self):
-        while True:
-            # reads a line the last byte is a newline character, and we don't need it
-            data = self.serial_conn.readline()[:-2]
-            if data:
-                if data[0] == ord('_'):
-                    command_code = data[1]
-                    print("Command registered: " + chr(command_code))
-                    value = data[3:]
-
-                    if command_code == DEVICE_NAME:
-                        self.set_device_name(value)
-                    if command_code == CENTRAL_CONNECTED:
-                        self.central_connected()
-                    if command_code == CENTRAL_DISCONNECTED:
-                        self.central_disconnected()
-                    if command_code == START_CONNECT:
-                        self.start_connect()
-                    if command_code == DISCONNECT_WFD:
-                        self.disconnect()
-                    if command_code == START_SOCKET:
-                        self.wifi_direct_connected()
-
-                print(data)
 
     def disconnect(self):
         """
@@ -132,7 +110,7 @@ class WifiDirectConnector:
 
     def get_mac_address(self) -> str:
         """
-
+        get mac address of p2p device
         :return: mac address of p2p device
         """
         to_return = ""
@@ -154,7 +132,12 @@ class WifiDirectConnector:
             raise ValueError(f"couldn't get mac address of '{self.device_name}'")
         return to_return
 
-    def p2p_connect(self, macd):
+    def p2p_connect(self, macd) -> bool:
+        """
+        connect to device
+        :param macd: mac address of target device
+        :return: True if connection was successfully established; else False
+        """
         to_return = False
 
         p2p_connect_file = os.popen(f"{WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_connect {macd} pbc", 'r')
@@ -168,6 +151,10 @@ class WifiDirectConnector:
         return to_return
 
     def p2p_group_remove(self):
+        """
+
+        :return:
+        """
         to_return = False
 
         p2p_group_remove_file = os.popen(P2P_GROUP_REMOVE_COMMAND, "r")
@@ -181,6 +168,9 @@ class WifiDirectConnector:
         return to_return
 
     def start_connect_loop(self):
+        """
+        waits for connection request
+        """
         connected = False
         while not connected:
             try:
@@ -191,7 +181,6 @@ class WifiDirectConnector:
                 time.sleep(1)
 
 
-
 if __name__ == "__main__":
     wifi_direct_conn = WifiDirectConnector()
     wifi_direct_conn.set_device_name('Android_dq8l')
@@ -199,4 +188,3 @@ if __name__ == "__main__":
     wifi_direct_conn.central_connected()
 
     wifi_direct_conn.start_connect_loop()
-
