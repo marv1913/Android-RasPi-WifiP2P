@@ -1,6 +1,13 @@
 name: Pylint
 
-on: [push]
+on:
+  push:
+    branches:
+      - '**'        # matches every branch
+      - '!badges'   # excludes master
+    paths:
+      - pi_server/**
+      - pylintrc
 
 jobs:
   build:
