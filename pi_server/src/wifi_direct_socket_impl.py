@@ -1,5 +1,5 @@
-import socket
-from abc import ABC, abstractmethod
+import click
+from click_shell import shell, make_click_shell
 
 from pi_server.src.wifi_direct_socket import WifiDirectSocket
 
@@ -13,4 +13,25 @@ class SimpleMessenger(WifiDirectSocket):
         self.send_message_to_client(message.encode())
 
     def on_connected(self):
-        self.send_text_message('hello world')
+        print('start receive thread')
+        self.start_receive_thread()
+
+
+messenger = SimpleMessenger()
+messenger.start_server_socket()
+
+
+@shell(prompt='my-app > ', intro='Starting my app...')
+def main():
+    pass
+
+
+@main.command()
+@click.option("--message", prompt=" Enter the message", type=str)
+def send(message):
+    click.echo(f"sending message '{message}'")
+    messenger.send_text_message(message)
+
+
+if __name__ == "__main__":
+    main()

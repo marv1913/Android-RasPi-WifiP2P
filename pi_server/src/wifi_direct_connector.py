@@ -18,6 +18,8 @@ GET_P2P_PEERS_COMMAND = f'for i in $( {WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_pe
 P2P_GROUP_REMOVE_COMMAND = f"{WPA_CLI_LOCATION} -ip2p-dev-wlan0 p2p_group_remove  $(ip -br link | grep -Po " \
                            f"'p2p-wlan0-\\d+')"
 
+# p2p_listen
+# p2p_connect <<mac_addr>> pbc
 
 class WifiDirectConnector:
     """
@@ -194,7 +196,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     wifi_direct_conn.set_device_name(args.target_device)
-    wifi_direct_conn.p2p_group_remove()
+    # wifi_direct_conn.p2p_group_remove()
     wifi_direct_conn.central_connected()
 
-    wifi_direct_conn.start_connect_loop()
+    # wifi_direct_conn.start_connect_loop()

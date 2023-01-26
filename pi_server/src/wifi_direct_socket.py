@@ -1,5 +1,6 @@
 import socket
 import sys
+import threading
 from abc import ABC, abstractmethod
 
 
@@ -9,20 +10,27 @@ class WifiDirectSocket(ABC):
     connection: socket
 
     def start_server_socket(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((self.HOST, self.PORT))
-        s.listen()
-        self.connection, addr = s.accept()
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind((self.HOST, self.PORT))
+        server_socket.listen()
+        self.connection, addr = server_socket.accept()
         print(f'client connected: {addr}')
         self.on_connected()
 
     def start_receive_thread(self):
         self.check_connection()
-        while True:
-            data: bytes = self.connection.recv(1024)
-            if not data:
-                sys.exit(0)
-            self.on_receive(data)
+
+        def receive_loop():
+            while True:
+                data: bytes = self.connection.recv(1024)
+                print(data)
+
+                if not data:
+                    sys.exit(0)
+                self.on_receive(data)
+
+        t = threading.Thread(target=receive_loop)
+        t.start()
 
     def send_message_to_client(self, message: bytes):
         self.check_connection()
