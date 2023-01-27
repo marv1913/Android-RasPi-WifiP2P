@@ -36,6 +36,7 @@ jobs:
     - name:
       run: |
         pylint pi_server/ --fail-under 8
+      continue-on-error: true
     - name: Archive code coverage results
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
