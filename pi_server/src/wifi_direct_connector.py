@@ -1,202 +1,127 @@
-import argparse
-import os
+"""
+This module provides functions to be able to connect to a target p2p device using the application 'wpa_cli'
+"""
+import re
 import subprocess
 import time
 
-BLE_INIT_FAILED = ord("0")
-BLE_INIT_SUCCESS = ord("1")
-CENTRAL_CONNECTED = ord("2")
-DEVICE_NAME = ord("3")
-START_CONNECT = ord("4")
-CENTRAL_DISCONNECTED = ord("5")
-DISCONNECT_WFD = ord("7")
-START_SOCKET = ord("8")
-WPA_CLI_LOCATION = "/usr/sbin/wpa_cli"
-P2P_FIND_COMMAND = f"{WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_find"
-GET_P2P_PEERS_COMMAND = f'for i in $( {WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_peers ); do echo -n \"$i \n\"; ' \
-                        f'{WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_peer $i | grep -E \"device_name=\"; done'
-P2P_GROUP_REMOVE_COMMAND = f"{WPA_CLI_LOCATION} -ip2p-dev-wlan0 p2p_group_remove  $(ip -br link | grep -Po " \
-                           f"'p2p-wlan0-\\d+')"
 
-# p2p_listen
-# p2p_connect <<mac_addr>> pbc
+class P2PPeer:
+    """
+    This class represents a p2p peer.
+    """
+
+    def __init__(self, device_name: str, mac_address: str, status: int):
+        self.device_name = device_name
+        self.mac_address = mac_address
+        self.status = status
+
+    def __str__(self):
+        return f"{self.device_name} - {self.mac_address}"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class WifiDirectConnector:
     """
     This class provides methods for establishing a WiFi-Direct connection with an Android device.
     """
-    WPA_CLI_HELP = f"{WPA_CLI_LOCATION} -h"
+    WPA_CLI_LOCATION = "/usr/sbin/wpa_cli"
+    WPA_CLI_LISTEN = "p2p_listen"
+    WPA_CLI_P2P_PEERS = "p2p_peers"
+    WPA_CLI_HELP = "-h"
+    P2P_FIND_COMMAND = f"{WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_find"
+    GET_P2P_PEERS_COMMAND = f'for i in $( {WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_peers ); do echo -n \"$i \n\"; ' \
+                            f'{WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_peer $i | grep -E \"device_name=\"; done'
+    P2P_GROUP_REMOVE_COMMAND = "-ip2p-dev-wlan0 p2p_group_remove  $(ip -br link | grep -Po 'p2p-wlan0-\\d+')"
+    P2P_CONNECT = "p2p_connect {target_device_mac_addr} pbc"
 
     def __init__(self):
         self.device_name = ""
         self.connected = False
         self.check_wpa_cli_available()
 
+    def execute_wpa_cli_command(self, command: str):
+        """
+        Executes wpa_cli command
+        @param command: argument(s) as str
+        """
+        subprocess.run(f"{self.WPA_CLI_LOCATION} {command}", check=True)
+
     def check_wpa_cli_available(self):
         """
         check whether the application 'wpa_cli`is installed
-        :raises ValueError: raise if not installed or status-code is not equal to 0
+        @raise ValueError: raises if not installed or status-code is not equal to 0
         """
-        with subprocess.Popen(self.WPA_CLI_HELP.split(' '), stdout=subprocess.DEVNULL,
-                              stderr=subprocess.STDOUT) as child:
-            child.wait()
-            if child.returncode != 0:
-                raise ValueError('wpa_cli is not available')
+        self.execute_wpa_cli_command(self.WPA_CLI_HELP)
 
-    def disconnect(self):
+    def remove_p2p_group(self):
         """
-        close p2p connection
+        removes all p2p groups
         """
-        self.connected = False
-        print("disconnecting")
-        if not self.p2p_group_remove():
-            print("Disconnect failed")
-        else:
-            print("Disconnected")
+        self.execute_wpa_cli_command(self.P2P_GROUP_REMOVE_COMMAND)
 
-    def start_connect(self):
+    def make_device_visible(self):
         """
-        connect to p2p device
+        executes 'wpa_cli listen' to make device visible
         """
-        if self.device_name == "":
-            return
-        print("Starting connection with " + str(self.device_name))
-        if not self.p2p_find():
-            print("p2p_find failed. stopping")
-            return
+        self.execute_wpa_cli_command(self.WPA_CLI_LISTEN)
 
-        mac_addr = self.get_mac_address()
-
-        print("got mac-address: " + str(mac_addr))
-
-        if self.p2p_connect(mac_addr):
-            print("successfully connected to " + str(self.device_name))
-            self.connected = True
-
-        else:
-            print("Connection failed. Something went wrong")
-
-    def central_connected(self):
+    def get_available_devices(self) -> list[P2PPeer]:
         """
-        search for p2p device
+        Gets all available target devices.
+        @return: list containing all target devices
         """
-        self.connected = False
-        if not self.p2p_find():
-            print("p2p_find failed. stopping")
-            return
+        mac_addresses: list[str] = []
+        result = subprocess.run("/usr/sbin/wpa_cli p2p_peers", shell=True, capture_output=True, check=True)
+        for line in result.stdout.decode().splitlines():
+            if re.search(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", line):
+                mac_addresses.append(line)
 
-    def central_disconnected(self):
+        available_peers: list[P2PPeer] = []
+        for mac_address in mac_addresses:
+            result = subprocess.run(f"/usr/sbin/wpa_cli p2p_peer {mac_address}", shell=True, capture_output=True,
+                                    check=True)
+            stdout = result.stdout.decode()
+            device_name = re.search(r'(?<=device_name=).*', stdout).group()
+            device_status = re.search(r'(?<=status=).*', stdout).group()
+            available_peers.append(P2PPeer(device_name, mac_address, int(device_status)))
+        return available_peers
+
+    def connect_to_device_if_available(self, device_name, attempts: int = 30, time_to_sleep: int = 2):
         """
-        unset device_name
+        Connects to a target device and waits for an incoming connection request.
+        @param device_name: target device name
+        @param attempts: how many attempts should be used to wait for the connection request
+        @param time_to_sleep: time in seconds how long should be waited between each attempt
         """
-        self.device_name = ""
+        for _ in range(attempts):
+            status_text = f'\rwaiting for connection request from {device_name}. '
+            target_device: P2PPeer
+            for target_device in self.get_available_devices():
+                if target_device.device_name == device_name:
+                    # found device
+                    if target_device.status == 1:
+                        # got connection request
+                        self.connect_to_target_device(target_device)
+                        return True
+                    status_text = status_text + 'Found device, but waiting for connection_request'
+            print(status_text, end='')
+            time.sleep(time_to_sleep)
+        return False
 
-    def set_device_name(self, peer_device_name: str):
+    def connect_to_target_device(self, device: P2PPeer):
         """
-        setter for device_name attribute
-        :param peer_device_name:
+        Connects to a target device.
+        @param device: target device as P2PPeer object
         """
-        self.device_name = peer_device_name
-
-    def p2p_find(self):
-        """
-        search for p2p device
-        :return: True if device was found; else False
-        """
-        to_return = False
-        p2p_find_file = os.popen(P2P_FIND_COMMAND, 'r')
-        cmd_output = p2p_find_file.readline()
-
-        if cmd_output == "OK\n":
-            to_return = True
-
-        p2p_find_file.close()
-
-        return to_return
-
-    def get_mac_address(self) -> str:
-        """
-        get mac address of p2p device
-        :return: mac address of p2p device
-        """
-        to_return = ""
-
-        get_peers_file = os.popen(GET_P2P_PEERS_COMMAND, 'r')
-        while True:
-            macd = get_peers_file.readline()[:-1]
-            device_name = get_peers_file.readline()[12:-1]
-
-            if macd == "" or device_name == "":
-                break
-
-            if device_name == self.device_name:
-                to_return = macd
-                break
-
-        get_peers_file.close()
-        if len(to_return) == 0:
-            raise ValueError(f"couldn't get mac address of '{self.device_name}'")
-        return to_return
-
-    def p2p_connect(self, macd) -> bool:
-        """
-        connect to device
-        :param macd: mac address of target device
-        :return: True if connection was successfully established; else False
-        """
-        to_return = False
-
-        p2p_connect_file = os.popen(f"{WPA_CLI_LOCATION} -i p2p-dev-wlan0 p2p_connect {macd} pbc", 'r')
-        cmd_output = p2p_connect_file.readline()
-
-        if cmd_output == "OK\n":
-            to_return = True
-        else:
-            print(cmd_output)
-
-        return to_return
-
-    def p2p_group_remove(self):
-        """
-
-        :return:
-        """
-        to_return = False
-
-        p2p_group_remove_file = os.popen(P2P_GROUP_REMOVE_COMMAND, "r")
-        cmd_output = p2p_group_remove_file.readline()
-
-        if cmd_output == "OK\n":
-            to_return = True
-        else:
-            print(cmd_output)
-
-        return to_return
-
-    def start_connect_loop(self):
-        """
-        waits for connection request
-        """
-        connected = False
-        while not connected:
-            try:
-                mac_addr = self.get_mac_address()
-                print(f'mac address: {mac_addr}')
-                connected = self.p2p_connect(mac_addr)
-            except ValueError:
-                time.sleep(1)
+        self.execute_wpa_cli_command(self.P2P_CONNECT.format(target_device_mac_addr=device.mac_address))
 
 
 if __name__ == "__main__":
     wifi_direct_conn = WifiDirectConnector()
+    wifi_direct_conn.make_device_visible()
 
-    parser = argparse.ArgumentParser(description='Provides an Interface to set up a P2P Server.')
-
-    parser.add_argument('target_device', help="Set name of target device")
-    args = parser.parse_args()
-
-    wifi_direct_conn.set_device_name(args.target_device)
-    # wifi_direct_conn.p2p_group_remove()
-    wifi_direct_conn.central_connected()
-
-    # wifi_direct_conn.start_connect_loop()
+    wifi_direct_conn.connect_to_device_if_available('pixel6')
+    # wifi_direct_conn.remove_p2p_group()
