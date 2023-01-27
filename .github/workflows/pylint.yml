@@ -33,7 +33,8 @@ jobs:
         pylint pi_server/ | tee pylint.txt
         score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)
         anybadge -l pylint -v $score -f pylint.svg 2=red 4=orange 9=yellow 10=green
-    - name:
+    - name: check linting
+      id: linting
       run: |
         pylint pi_server/ --fail-under 8
       continue-on-error: true
@@ -46,4 +47,7 @@ jobs:
         file_pattern: '*.svg '
         create_branch: true
         push_options: '--force'
+    - name: Check on failures
+      if: steps.linting.outcome != 'success'
+      run: exit 1
 
