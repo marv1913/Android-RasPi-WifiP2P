@@ -19,14 +19,19 @@ Before you can run the application it is necessary to install some additional pa
 The `rasperry-config.sh` script can be used to install these packages. After running this script the Raspberry Pi 
 will lose the current Wi-Fi connection. It's still possible to communicate with the Raspberry Pi using a wired connection.
 
-### Start the Wi-Fi Direct Connector application
+### Usage
 
-The following command starts the Connector application:
+The following command starts the P2P-Connector application:
 
-`python3 pi_server/src/wifi_direct_connetor.py [target_device_name]`
+`python3 pi_server/src/wifi_direct_connetor.py --target [target_device_name]`
 
 The Raspberry Pi is now waiting for an incoming connection from the device with the device name 'target_device_name'.
 After receiving a connection request from the android phone, the Raspberry Pi will establish a connection automatically.
+
+Remove P2P Group (disconnect from target device):
+
+`python3 pi_server/src/wifi_direct_connetor.py --remove-group`
+
 
 ### display usage text
 
