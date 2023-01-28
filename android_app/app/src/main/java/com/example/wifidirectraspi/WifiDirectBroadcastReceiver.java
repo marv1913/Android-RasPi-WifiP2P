@@ -1,5 +1,4 @@
 package com.example.wifidirectraspi;
-
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
@@ -23,20 +22,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
-
 public class WifiDirectBroadcastReceiver extends BroadcastReceiver implements WifiP2pManager.ConnectionInfoListener {
     WifiP2pManager manager;
     WifiP2pManager.Channel channel;
-    MainActivity activity;
-    WifiP2pManager.PeerListListener myPeerListListener;
+    MainActivity activity;    WifiP2pManager.PeerListListener myPeerListListener;
     WifiP2pConfig config;
     WifiP2pDevice device;
 
-    public WifiDirectBroadcastReceiver(WifiP2pManager wifiP2pManager, WifiP2pManager.Channel channel, MainActivity activity) {
+    public WifiDirectBroadcastReceiver(WifiP2pManager wifiP2pManager, WifiP2pManager.Channel channel) {
         this.manager = wifiP2pManager;
         this.channel = channel;
-        this.activity = activity;
+
     }
 //    @Override
 //    public void onReceive(Context context, Intent intent) {
@@ -68,26 +64,13 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver implements Wi
 //                Toast.makeText(activity, "Wifi off", Toast.LENGTH_SHORT).show();
 //            }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
+            Log.d("MY_DEBUG", "PeerListListener: updating device list");
+
 
             if (manager != null) {
                 manager.requestPeers(channel, myPeerListListener);
                 manager.requestPeers(channel, peers -> {
-                    Log.d("MY_DEBUG",String.format("PeerListListener: %d peers available, updating device list", peers.getDeviceList().size()));
-                    List<String> deviceNames = new ArrayList<>();
-                    List<WifiP2pDevice> p2pDevices = new ArrayList<>(peers.getDeviceList());
-                    for(WifiP2pDevice device: p2pDevices){
-                        deviceNames.add(device.deviceName);
-                    }
-                    String[] deviceNameArr = deviceNames.toArray(new String[deviceNames.size()]);
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, R.layout.activity_listview, R.id.textView, deviceNameArr);
-                    activity.listView.setAdapter(adapter);
-                    activity.listView.setOnItemClickListener((adapterView, view, i, l) -> {
-                            device = p2pDevices.get(i);
-                        config = new WifiP2pConfig();
-                        config.deviceAddress = device.deviceAddress;
-                        config.wps.setup = WpsInfo.PBC;
-                            connectPeer();
-                    });
+
                 });
             }
 
@@ -100,19 +83,19 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver implements Wi
             NetworkInfo networkInfo = (NetworkInfo) intent
                     .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
             if (networkInfo.isConnected()) {
-                Toast.makeText(activity, "connected to peer", Toast.LENGTH_SHORT).show();
+
                 // we are connected with the other device, request connection
                 // info to find group owner IP
                 manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
                     @Override
                     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-                        activity.textView.setText("Group Owner IP - " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
+
                         new DataExchangeAsyncTask().execute();
                     }
                 });
             } else {
                 // It's a disconnect
-                Toast.makeText(activity, "disconnected from peer", Toast.LENGTH_SHORT).show();
+
 
             }
 

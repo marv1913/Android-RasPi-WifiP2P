@@ -21,14 +21,14 @@ will lose the current Wi-Fi connection. It's still possible to communicate with 
 
 ### Usage
 
-The following command starts the P2P-Connector application:
+#### Start the P2P-Connector application:
 
 `python3 pi_server/src/wifi_direct_connetor.py --target [target_device_name]`
 
 The Raspberry Pi is now waiting for an incoming connection from the device with the device name 'target_device_name'.
 After receiving a connection request from the android phone, the Raspberry Pi will establish a connection automatically.
 
-Remove P2P Group (disconnect from target device):
+#### Remove P2P Group (disconnect from target device):
 
 `python3 pi_server/src/wifi_direct_connetor.py --remove-group`
 
