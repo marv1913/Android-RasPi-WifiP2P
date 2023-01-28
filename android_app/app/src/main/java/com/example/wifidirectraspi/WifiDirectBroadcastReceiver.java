@@ -158,7 +158,7 @@ public class WifiDirectBroadcastReceiver extends BroadcastReceiver implements Wi
         @Override
         protected Void doInBackground(Void... voids) {
             try {
-                Socket socket = new Socket("192.168.4.1", 4444);
+                Socket socket = new Socket("192.168.4.1", 4445);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 out.println("hello world!");
             }catch (IOException e){
