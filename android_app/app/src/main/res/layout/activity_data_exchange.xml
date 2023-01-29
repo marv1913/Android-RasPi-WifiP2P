@@ -8,69 +8,78 @@
     <TextView
         android:id="@+id/connectedPeerTextView"
         android:layout_width="358dp"
-        android:layout_height="37dp"
+        android:layout_height="0dp"
         android:layout_marginTop="40dp"
+        android:layout_marginBottom="462dp"
         android:text="connected to peer:"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/editTextTextPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/receivedMessagesTextView"
-        android:layout_width="238dp"
-        android:layout_height="242dp"
-        android:layout_marginTop="124dp"
-        android:inputType="textMultiLine"
-        android:text="TextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/connectedPeerTextView" />
-
     <EditText
-        android:id="@+id/editTextTextPersonName"
-        android:layout_width="179dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="48dp"
-        android:layout_marginEnd="12dp"
+        android:id="@+id/editTextMessage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="59dp"
+        android:layout_marginBottom="147dp"
         android:ems="10"
-
-
         android:hint="Enter Message"
         android:inputType="textPersonName"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/sendMessageButton"
-        app:layout_constraintTop_toBottomOf="@+id/receivedMessagesTextView" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/connectedPeerTextView" />
 
     <Button
         android:id="@+id/sendMessageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="72dp"
+        android:layout_marginEnd="53dp"
+        android:layout_marginBottom="144dp"
         android:text="send"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/receivedMessagesTextView" />
+        app:layout_constraintStart_toEndOf="@+id/editTextTextPersonName"
+        app:layout_constraintTop_toBottomOf="@+id/receivedMessagesListView" />
 
     <Button
         android:id="@+id/connectSocketButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="44dp"
+        android:layout_marginTop="101dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="35dp"
         android:text="connect socket"
+        app:layout_constraintBottom_toTopOf="@+id/receivedMessagesListView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/connectedPeerTextView" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/socketInfoTextView"
         android:layout_width="170dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="28dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="20dp"
         android:text="TextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/connectedPeerTextView" />
+
+    <ListView
+        android:id="@+id/receivedMessagesListView"
+        android:layout_width="336dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="21dp"
+        android:choiceMode="singleChoice"
+        android:listSelector="@android:color/darker_gray"
+        app:layout_constraintBottom_toTopOf="@+id/sendMessageButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/connectSocketButton" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

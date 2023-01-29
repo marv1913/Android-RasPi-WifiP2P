@@ -11,6 +11,7 @@ links:
 https://raspberrypi.stackexchange.com/questions/117150/issue-connecting-raspberry-pi-to-android-via-wifi-p2p
 https://raspberrypi.stackexchange.com/questions/117718/how-to-connect-an-android-phone-and-a-raspberry-pi-through-wifi-direct-programma
 
+https://github.com/CatalinPrata/funcodetuts/blob/master/AndroidTCPClien
 ## Raspberry Pi P2P Server
 
 The Application to start the P2P Server for the Raspberry Pi is located at `pi_server/src/wifi_direct_connector.py`.

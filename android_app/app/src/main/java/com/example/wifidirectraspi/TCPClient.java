@@ -13,7 +13,7 @@ import java.net.Socket;
 public class TCPClient {
 
     public static final String SERVER_IP = "192.168.4.1"; //your computer IP address
-    public static final int SERVER_PORT = 4445;
+    public static final int SERVER_PORT = 4444;
     // message to send to the server
     private String mServerMessage;
     // sends message received notifications
@@ -37,6 +37,9 @@ public class TCPClient {
         this.connectionEstablishedListener = connectionListener;
     }
 
+    public TCPClient() {
+    }
+
     /**
      * Sends the message entered by client to the server
      *
@@ -57,10 +60,6 @@ public class TCPClient {
      * Close the connection and release the members
      */
     public void stopClient() {
-
-        // send mesage that we are closing the connection
-//        sendMessage(Constants.CLOSED_CONNECTION + "Kazy");
-
         mRun = false;
 
         if (mBufferOut != null) {
@@ -72,6 +71,11 @@ public class TCPClient {
         mBufferIn = null;
         mBufferOut = null;
         mServerMessage = null;
+        connectedToSocket = false;
+    }
+
+    public void stopSocketThread(){
+        mRun = false;
     }
 
     public void run() {
@@ -87,7 +91,9 @@ public class TCPClient {
             //create a socket to make the connection with the server
             Socket socket = new Socket(serverAddr, SERVER_PORT);
             this.connectedToSocket = true;
-            this.connectionEstablishedListener.onConnected();
+            if(null != connectionEstablishedListener){
+                this.connectionEstablishedListener.onConnected();
+            }
             try {
 
                 //sends the message to the server
@@ -95,8 +101,6 @@ public class TCPClient {
 
                 //receives the message which the server sends back
                 mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                // send login name
-//                sendMessage(Constants.LOGIN_NAME + PreferencesManager.getInstance().getUserName());
 
                 //in this while the client listens for the messages sent by the server
                 while (mRun) {
@@ -109,6 +113,8 @@ public class TCPClient {
                     }
 
                 }
+                Log.d("MY_DEBUG", "message thread ended");
+
 
                 Log.e("RESPONSE FROM SERVER", "S: Received Message: '" + mServerMessage + "'");
 
@@ -123,7 +129,9 @@ public class TCPClient {
             }
 
         } catch (Exception e) {
-            connectionFailedListener.connectionFailed(e.getMessage());
+            if(null != connectionFailedListener){
+                connectionFailedListener.connectionFailed(e.getMessage());
+            }
             Log.e("TCP", "C: Error", e);
 
         }
