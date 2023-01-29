@@ -12,14 +12,17 @@ import java.net.Socket;
 
 public class TCPClient {
 
-    public static final String SERVER_IP = "10.0.2.2"; //your computer IP address
-    public static final int SERVER_PORT = 4444;
+    public static final String SERVER_IP = "192.168.4.1"; //your computer IP address
+    public static final int SERVER_PORT = 4445;
     // message to send to the server
     private String mServerMessage;
     // sends message received notifications
-    private OnMessageReceived mMessageListener = null;
+    private OnMessageReceived mMessageListener;
+    private OnConnectionFailed connectionFailedListener;
+    private OnConnectionEstablished connectionEstablishedListener;
     // while this is true, the server will continue running
     private boolean mRun = false;
+    private boolean connectedToSocket = false;
     // used to send messages
     private PrintWriter mBufferOut;
     // used to read messages from the server
@@ -28,8 +31,10 @@ public class TCPClient {
     /**
      * Constructor of the class. OnMessagedReceived listens for the messages received from server
      */
-    public TCPClient(OnMessageReceived listener) {
-        mMessageListener = listener;
+    public TCPClient(OnMessageReceived listener, OnConnectionFailed connectionFailedListener, OnConnectionEstablished connectionListener) {
+        this.mMessageListener = listener;
+        this.connectionFailedListener = connectionFailedListener;
+        this.connectionEstablishedListener = connectionListener;
     }
 
     /**
@@ -42,6 +47,10 @@ public class TCPClient {
             mBufferOut.println(message);
             mBufferOut.flush();
         }
+    }
+
+    public boolean isConnected(){
+        return connectedToSocket;
     }
 
     /**
@@ -77,7 +86,8 @@ public class TCPClient {
 
             //create a socket to make the connection with the server
             Socket socket = new Socket(serverAddr, SERVER_PORT);
-
+            this.connectedToSocket = true;
+            this.connectionEstablishedListener.onConnected();
             try {
 
                 //sends the message to the server
@@ -104,7 +114,7 @@ public class TCPClient {
 
             } catch (Exception e) {
 
-                Log.e("TCP", "S: Error", e);
+                Log.e("MY_DEBUG", "S: Error", e);
 
             } finally {
                 //the socket must be closed. It is not possible to reconnect to this socket
@@ -113,7 +123,7 @@ public class TCPClient {
             }
 
         } catch (Exception e) {
-
+            connectionFailedListener.connectionFailed(e.getMessage());
             Log.e("TCP", "C: Error", e);
 
         }
@@ -124,5 +134,17 @@ public class TCPClient {
     //class at on asynckTask doInBackground
     public interface OnMessageReceived {
         public void messageReceived(String message);
+    }
+
+    public interface OnConnectionFailed {
+
+        public void connectionFailed(String message);
+
+    }
+
+    public interface OnConnectionEstablished {
+
+        public void onConnected();
+
     }
 }
