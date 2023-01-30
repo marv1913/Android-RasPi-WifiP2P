@@ -3,21 +3,11 @@ package com.example.wifidirectraspi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
-import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.Toast;
-
-import com.google.android.material.color.DynamicColors;
-
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity {
-
-
-    private final int REQUEST_LOCATION_PERMISSION = 1;
 
 
     @Override
@@ -29,10 +19,8 @@ public class MainActivity extends AppCompatActivity {
         Button button = findViewById(R.id.p2p_connect_button);
         button.setOnClickListener(view -> {
             Intent myIntent = new Intent(MainActivity.this, P2PConnectActivity.class);
-//                myIntent.putExtra("key", value); //Optional parameters
             MainActivity.this.startActivity(myIntent);
         });
-
     }
 
     @Override
@@ -44,7 +32,5 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
     }
-
-
 
 }

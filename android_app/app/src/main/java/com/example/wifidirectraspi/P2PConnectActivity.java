@@ -1,13 +1,9 @@
 package com.example.wifidirectraspi;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.WpsInfo;
-import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
@@ -19,7 +15,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,8 +38,9 @@ public class P2PConnectActivity extends AppCompatActivity implements WifiP2pMana
     Button connectButton;
     WifiP2pDevice device;
     IntentFilter intentFilter;
-    WifiDirectBroadcastReceiverV2 wifiDirectBroadcastReceiver;
+    WifiDirectBroadcastReceiver wifiDirectBroadcastReceiver;
     boolean connectPeer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +48,7 @@ public class P2PConnectActivity extends AppCompatActivity implements WifiP2pMana
         setContentView(R.layout.activity_p2p);
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(this, getMainLooper(), null);
-        wifiDirectBroadcastReceiver = new WifiDirectBroadcastReceiverV2(manager, channel, this);
+        wifiDirectBroadcastReceiver = new WifiDirectBroadcastReceiver(manager, channel, this);
 
         intentFilter = new IntentFilter();
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -97,9 +93,8 @@ public class P2PConnectActivity extends AppCompatActivity implements WifiP2pMana
     public void fillPeerListView(List<WifiP2pDevice> p2pDevices) {
         if (0 == listView.getCheckedItemCount()) {
             List<String> deviceNames = new ArrayList<>();
-
             for (WifiP2pDevice device : p2pDevices) {
-                deviceNames.add(device.deviceName + "  " + device.status);
+                deviceNames.add(device.deviceName);
             }
             String[] deviceNameArr = deviceNames.toArray(new String[deviceNames.size()]);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.activity_listview, R.id.textView, deviceNameArr);
@@ -123,7 +118,7 @@ public class P2PConnectActivity extends AppCompatActivity implements WifiP2pMana
         }
     }
 
-    public void connectPeer(){
+    public void connectPeer() {
         connectPeer = true;
         wifiDirectBroadcastReceiver.connectPeer(device);
     }
@@ -131,8 +126,6 @@ public class P2PConnectActivity extends AppCompatActivity implements WifiP2pMana
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        // Forward results to EasyPermissions
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
@@ -149,9 +142,10 @@ public class P2PConnectActivity extends AppCompatActivity implements WifiP2pMana
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         Log.d("MY_DEBUG", "onConnectionInfoAvailable");
-        if(null != wifiP2pInfo.groupOwnerAddress && connectPeer){
+        if (null != wifiP2pInfo.groupOwnerAddress && connectPeer) {
             Intent myIntent = new Intent(P2PConnectActivity.this, DataExchangeActivity.class);
-                myIntent.putExtra("P2P_DEVICE", device);
+            myIntent.putExtra("P2P_DEVICE", device);
+            myIntent.putExtra("P2P_INFO", wifiP2pInfo);
             P2PConnectActivity.this.startActivity(myIntent);
         }
 
