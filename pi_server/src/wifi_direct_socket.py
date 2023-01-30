@@ -1,34 +1,41 @@
 import socket
-import sys
 import threading
+from _socket import timeout
 from abc import ABC, abstractmethod
 
 
 class WifiDirectSocket(ABC):
-    HOST = "192.168.4.1"  # Standard loopback interface address (localhost)
-    PORT = 4444  # Port to listen on (non-privileged ports are > 1023)
     connection: socket
+    run_receiving_thread: bool = False
+
+    def __init__(self, host: str, port: int):
+        self.host: str = host
+        self.port: int = port
 
     def start_server_socket(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind((self.HOST, self.PORT))
+        server_socket.bind((self.host, self.port))
         server_socket.listen()
         self.connection, addr = server_socket.accept()
+        self.connection.settimeout(1.0)
         print(f'client connected: {addr}')
-        self.on_connected()
+        self.on_client_connected()
 
     def start_receive_thread(self):
         self.check_connection()
 
         def receive_loop():
-            while True:
-                data: bytes = self.connection.recv(1024)
-                print(data)
+            while self.run_receiving_thread:
+                try:
+                    data: bytes = self.connection.recv(1024)
+                    if not data:
+                        self.on_client_disconnected()
+                    else:
+                        self.on_receive_message(data)
+                except timeout:
+                    continue
 
-                if not data:
-                    sys.exit(0)
-                self.on_receive(data)
-
+        self.run_receiving_thread = True
         t = threading.Thread(target=receive_loop)
         t.start()
 
@@ -41,12 +48,16 @@ class WifiDirectSocket(ABC):
             raise ConnectionError("client not connected")
 
     def stop_receive_thread(self):
-        self.connection.shutdown(socket.SHUT_WR)
+        self.run_receiving_thread = False
 
     @abstractmethod
-    def on_receive(self, message: bytes):
+    def on_receive_message(self, message: bytes):
         pass
 
     @abstractmethod
-    def on_connected(self):
+    def on_client_connected(self):
+        pass
+
+    @abstractmethod
+    def on_client_disconnected(self):
         pass

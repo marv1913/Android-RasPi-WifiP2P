@@ -1,3 +1,5 @@
+import sys
+
 import click
 from click_shell import shell, make_click_shell
 
@@ -6,11 +8,14 @@ from pi_server.src.wifi_direct_socket import WifiDirectSocket
 
 class SimpleMessenger(WifiDirectSocket):
 
+    def on_client_disconnected(self):
+        print(f'client has disconnected')
+
     def on_receive(self, message: bytes):
         print(f'received message: {message.decode()}')
 
     def send_text_message(self, message: str):
-        self.send_message_to_client(message.encode())
+        self.send_message_to_client(f'{message}\n'.encode())
 
     def on_connected(self):
         print('start receive thread')
@@ -32,6 +37,10 @@ def send(message):
     click.echo(f"sending message '{message}'")
     messenger.send_text_message(message)
 
+@main.command()
+def exit():
+    click.echo(f"exiting")
+    messenger.stop_receive_thread()
 
 if __name__ == "__main__":
     main()

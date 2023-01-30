@@ -72,7 +72,28 @@ class WifiDirectConnector:
         result = subprocess.run(self.GET_WIFI_INTERFACE, shell=True, capture_output=True)
         if len(result.stdout) > 0:
             self.execute_wpa_cli_command(self.P2P_GROUP_REMOVE_COMMAND.format(interface_name=result.stdout.decode()))
-            time.sleep(15)
+            print('removing p2p group...')
+            time.sleep(10)
+
+    def remove_orphan_p2p_groups(self):
+        """
+        removes orphan p2p groups
+        """
+        result = subprocess.run(self.GET_WIFI_INTERFACE, shell=True, capture_output=True)
+        interface_name = result.stdout.decode().strip()
+        if len(interface_name) > 0:
+            devices = self.get_available_devices(interface_name=interface_name)
+            if len(devices) == 0:
+                print(f'group with interface "{interface_name}" has no members.')
+                self.remove_p2p_group()
+            else:
+                all_device_inactive = True
+                for device in devices:
+                    if self.check_already_connected(device.device_name):
+                        all_device_inactive = False
+                if all_device_inactive:
+                    print(f'group with interface "{interface_name}" has only inactive members: {devices}.')
+                    self.remove_p2p_group()
 
     def make_device_visible(self):
         """
@@ -80,13 +101,16 @@ class WifiDirectConnector:
         """
         self.execute_wpa_cli_command(self.WPA_CLI_LISTEN)
 
-    def get_available_devices(self) -> list[P2PPeer]:
+    def get_available_devices(self, interface_name: str = None) -> list[P2PPeer]:
         """
         Gets all available target devices.
         @return: list containing all target devices
         """
+        interface_command = f'-i {interface_name} '
+        if interface_name is None:
+            interface_command = ''
         mac_addresses: list[str] = []
-        stdout = self.execute_wpa_cli_command(self.WPA_CLI_P2P_PEERS, ignore_status_code=255)
+        stdout = self.execute_wpa_cli_command(f'{interface_command}{self.WPA_CLI_P2P_PEERS}', ignore_status_code=255)
         for line in stdout.splitlines():
             if re.search(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", line):
                 mac_addresses.append(line)
@@ -152,12 +176,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     wifi_direct_conn = WifiDirectConnector()
+    wifi_direct_conn.remove_orphan_p2p_groups()
 
     target_device_name = args.target
     if args.remove_group:
         print('removing p2p group')
         wifi_direct_conn.remove_p2p_group()
     else:
+        wifi_direct_conn.remove_orphan_p2p_groups()
         if wifi_direct_conn.check_already_connected(target_device_name):
             print(f'device "{target_device_name}" is already connected')
             sys.exit(0)
