@@ -1,0 +1,41 @@
+name: Pylint
+
+on:
+  push:
+    paths:
+      - pi_server/**
+      - .github/workflows/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.ACCESS_TOKEN }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r pi_server/requirements.txt
+        pip install pdoc
+    - name: create documentation
+      run: |
+        pdoc -o docs/python_p2p_connector pi_server/p2p_connector
+    - name: Archive code coverage results
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: update pylint badge
+        branch: badges
+        commit_options: '--no-verify --signoff'
+        file_pattern: 'docs'
+        create_branch: true
+        push_options: '--force'
+
+
