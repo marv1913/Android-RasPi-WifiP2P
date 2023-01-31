@@ -1,25 +1,34 @@
-import sys
-
+"""
+This module provides an example application to show how the abstract class WifiDirectSocket could be used to implement
+application which communicates with an android phone using a P2P connection.
+"""
 import click
-from click_shell import shell, make_click_shell
+from click_shell import shell
 
 from p2p_connector.wifi_direct_socket import WifiDirectSocket
 
 
 class SimpleMessenger(WifiDirectSocket):
+    """
+    This class inherits from the abstract parent class WifiDirectSocket. This is a simple example how the class
+    WifiDirectSocket can be used to establish a P2P connection.
+    """
 
     def on_receive_message(self, message: bytes):
         print(f'received message: {message.decode()}')
 
     def on_client_connected(self):
-        print(f'client connected')
+        print('client connected')
 
     def on_client_disconnected(self):
-        print(f'client has disconnected')
+        print('client has disconnected')
 
     def send_text_message(self, message: str):
+        """
+        Sends a message to the client.
+        @param message: message as str
+        """
         self.send_message_to_client(f'{message}\n'.encode())
-
 
 
 messenger = SimpleMessenger('192.168.4.1', 4444)
@@ -38,8 +47,8 @@ def send(message):
 
 
 @main.command()
-def exit():
-    click.echo(f"exiting")
+def stop():
+    click.echo("exiting")
     messenger.stop_receive_thread()
 
 

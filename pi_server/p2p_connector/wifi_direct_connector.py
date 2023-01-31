@@ -41,9 +41,7 @@ class WifiDirectConnector:
     P2P_CONNECT = "p2p_connect {target_device_mac_addr} pbc"
 
     def __init__(self):
-        self.device_name = ""
-        self.connected = False
-        # self.check_wpa_cli_available()
+        self.check_wpa_cli_available()
 
     def execute_wpa_cli_command(self, command: str, ignore_status_code: Optional[int] = None) -> str:
         """
