@@ -2,6 +2,9 @@ name: create documentation for python code
 
 on:
   push:
+    branches:
+      - '**'        # matches every branch
+      - '!badges'   # excludes master
     paths:
       - pi_server/**
       - .github/workflows/**
