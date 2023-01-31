@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 
 class WifiDirectSocket(ABC):
     connection: socket
+    receive_messages_thread: threading.Thread
     run_receiving_thread: bool = False
 
     def __init__(self, host: str, port: int):
@@ -19,10 +20,12 @@ class WifiDirectSocket(ABC):
         self.connection, addr = server_socket.accept()
         self.connection.settimeout(1.0)
         print(f'client connected: {addr}')
-        self.on_client_connected()
+        self.__start_receive_thread()
 
-    def start_receive_thread(self):
+    def __start_receive_thread(self):
+        self.run_receiving_thread = True
         self.check_connection()
+        self.on_client_connected()
 
         def receive_loop():
             while self.run_receiving_thread:
@@ -31,13 +34,13 @@ class WifiDirectSocket(ABC):
                     if not data:
                         self.on_client_disconnected()
                     else:
+                        print(data)
                         self.on_receive_message(data)
                 except timeout:
                     continue
 
-        self.run_receiving_thread = True
-        t = threading.Thread(target=receive_loop)
-        t.start()
+        self.receive_messages_thread = threading.Thread(target=receive_loop)
+        self.receive_messages_thread.start()
 
     def send_message_to_client(self, message: bytes):
         self.check_connection()
@@ -49,6 +52,7 @@ class WifiDirectSocket(ABC):
 
     def stop_receive_thread(self):
         self.run_receiving_thread = False
+        self.receive_messages_thread.join()
 
     @abstractmethod
     def on_receive_message(self, message: bytes):
