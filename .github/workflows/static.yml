@@ -1,4 +1,4 @@
-name: Pylint
+name: create documentation for python code
 
 on:
   push:
@@ -31,10 +31,9 @@ jobs:
     - name: Archive code coverage results
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: update pylint badge
+        commit_message: update documentation html files
         branch: badges
         commit_options: '--no-verify --signoff'
-        file_pattern: 'docs'
         create_branch: true
         push_options: '--force'
 
