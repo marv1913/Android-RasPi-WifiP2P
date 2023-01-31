@@ -37,6 +37,7 @@ jobs:
         uses: actions/configure-pages@v3
       - name: create html files
         run : |
+          pip install pdoc
           pdoc -o html pi_server/p2p_connector
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
