@@ -38,13 +38,15 @@ jobs:
       run: |
         pylint --disable W1510 pi_server/ --fail-under 8
       continue-on-error: true
+    - name: create documentation
+      run: |
+        pdoc -o docs/python_p2p_connector pi_server/p2p_connector
     - name: Archive code coverage results
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: update pylint badge
         branch: badges
         commit_options: '--no-verify --signoff'
-        file_pattern: '*.svg '
         create_branch: true
         push_options: '--force'
     - name: Check on failures
