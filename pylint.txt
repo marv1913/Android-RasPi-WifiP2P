@@ -1,0 +1,10 @@
+************* Module p2p_connector.wifi_direct_socket
+pi_server/p2p_connector/wifi_direct_socket.py:55:20: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+************* Module p2p_connector.wifi_direct_socket_impl
+pi_server/p2p_connector/wifi_direct_socket_impl.py:38:0: C0116: Missing function or method docstring (missing-function-docstring)
+pi_server/p2p_connector/wifi_direct_socket_impl.py:44:0: C0116: Missing function or method docstring (missing-function-docstring)
+pi_server/p2p_connector/wifi_direct_socket_impl.py:50:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 9.78/10
+
