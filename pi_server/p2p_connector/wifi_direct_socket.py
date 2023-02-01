@@ -54,6 +54,7 @@ class WifiDirectSocket(ABC):
                     data: bytes = self.connection.recv(1024)
                     if not data:
                         self.on_client_disconnected()
+                        return
                     else:
                         print(data)
                         self.on_receive_message(data)

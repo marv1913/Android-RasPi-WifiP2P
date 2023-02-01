@@ -43,8 +43,8 @@
 
     <Button
         android:id="@+id/connectSocketButton"
-        android:layout_width="135dp"
-        android:layout_height="106dp"
+        android:layout_width="146dp"
+        android:layout_height="105dp"
         android:layout_marginTop="24dp"
         android:text="connect socket"
         android:textSize="18sp"
